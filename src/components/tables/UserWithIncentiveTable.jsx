@@ -1,21 +1,23 @@
-import React, { useState } from 'react'
-import Paper from '@mui/material/Paper'
-import Table from '@mui/material/Table'
-import { styled } from '@mui/material/styles'
-import TableHead from '@mui/material/TableHead'
-import TableBody from '@mui/material/TableBody'
-import TableContainer from '@mui/material/TableContainer'
-import TableRow from '@mui/material/TableRow'
-import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import IconButton from '@mui/material/IconButton'
-import { GrEdit } from 'react-icons/gr'
-import { RiDeleteBinLine } from 'react-icons/ri'
-import Checkbox from '@mui/material/Checkbox'
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
+import React, { useState } from 'react';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import { styled } from '@mui/material/styles';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import IconButton from '@mui/material/IconButton';
+import { GrEdit } from 'react-icons/gr';
+import { RiDeleteBinLine } from 'react-icons/ri';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import EditUserIncentiveModal from '../users-with-table/EditUserIncentiveModal';
+import axiosInstance from 'src/services/AxiosInterceptor';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -25,7 +27,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14
   }
-}))
+}));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:nth-of-type(odd)': {
@@ -34,81 +36,94 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:last-of-type td, &:last-of-type th': {
     border: 0
   }
-}))
+}));
 
 const createData = (
   srNo,
-  boName,
-  boEmail,
+  bo_name,
+  bo_email,
   headquarter,
-  aprMayJunTarget,
-  julAugSepTarget,
-  octNovDecTarget,
-  aprMayJunIncentive,
-  julAugSepIncentive,
-  octNovDecIncentive
+  april_may_june_target,
+  july_aug_sept_target,
+  oct_nov_dec_target,
+  april_may_june_incentive,
+  july_aug_sept_incentive,
+  oct_nov_dec_incentive,
+  user
 ) => {
   return {
     srNo,
-    boName,
-    boEmail,
+    bo_name,
+    bo_email,
     headquarter,
-    aprMayJunTarget,
-    julAugSepTarget,
-    octNovDecTarget,
-    aprMayJunIncentive,
-    julAugSepIncentive,
-    octNovDecIncentive
-  }
-}
+    april_may_june_target,
+    july_aug_sept_target,
+    oct_nov_dec_target,
+    april_may_june_incentive,
+    july_aug_sept_incentive,
+    oct_nov_dec_incentive,
+    user
+  };
+};
 
-const rows = [
-  createData(1, 'John Doe', 'john.doe@example.com', 'HQ1', 100, 120, 130, 10, 15, 20),
-  createData(2, 'Jane Smith', 'jane.smith@example.com', 'HQ2', 110, 130, 140, 20, 25, 30)
-]
+const UserWithIncentiveTable = ({ userRole, rows ,onDataAdded}) => {
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editUserId, setEditUserId] = useState(null);
 
-const UserWithIncentiveTable = ({ userRole , rows }) => {
-  const [selectedRows, setSelectedRows] = useState([])
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState(null)
-
-  const handleSelectAllClick = event => {
+  const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = rows.map(row => row.srNo)
-      setSelectedRows(newSelecteds)
+      const newSelecteds = rows.map((row) => row.srNo);
+      setSelectedRows(newSelecteds);
     } else {
-      setSelectedRows([])
+      setSelectedRows([]);
     }
-  }
+  };
 
-  const handleCheckboxClick = srNo => {
-    const selectedIndex = selectedRows.indexOf(srNo)
-    let newSelected = []
+  const handleCheckboxClick = (srNo) => {
+    const selectedIndex = selectedRows.indexOf(srNo);
+    let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selectedRows, srNo)
+      newSelected = newSelected.concat(selectedRows, srNo);
     } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selectedRows.slice(1))
+      newSelected = newSelected.concat(selectedRows.slice(1));
     } else if (selectedIndex === selectedRows.length - 1) {
-      newSelected = newSelected.concat(selectedRows.slice(0, -1))
+      newSelected = newSelected.concat(selectedRows.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selectedRows.slice(0, selectedIndex), selectedRows.slice(selectedIndex + 1))
+      newSelected = newSelected.concat(selectedRows.slice(0, selectedIndex), selectedRows.slice(selectedIndex + 1));
     }
 
-    setSelectedRows(newSelected)
-  }
+    setSelectedRows(newSelected);
+  };
 
   const handleSendMailClick = () => {
-    setDialogOpen(true)
-  }
+    setDialogOpen(true);
+  };
 
   const handleCloseDialog = () => {
-    setDialogOpen(false)
-  }
+    setDialogOpen(false);
+  };
 
-  const handleTemplateSelect = template => {
-    setSelectedTemplate(template)
-    setDialogOpen(false)
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    setDialogOpen(false);
+  };
+
+  const handleEditClick = (userId) => {
+    setEditUserId(userId);
+    console.log(userId);
+    setEditModalOpen(true);
+  };
+
+  const handleEditModalClose = () => {
+    setEditModalOpen(false);
+  };
+
+  const dataAdded = () =>{
+    onDataAdded();
   }
 
   return (
@@ -142,7 +157,7 @@ const UserWithIncentiveTable = ({ userRole , rows }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row ,index) => (
+          {rows.map((row,index) => (
             <StyledTableRow key={row.srNo} selected={selectedRows.indexOf(row.srNo) !== -1}>
               <StyledTableCell padding='checkbox'>
                 <Checkbox
@@ -151,7 +166,7 @@ const UserWithIncentiveTable = ({ userRole , rows }) => {
                 />
               </StyledTableCell>
               <StyledTableCell component='th' scope='row'>
-                {index+1}
+                {index + 1}
               </StyledTableCell>
               <StyledTableCell>{row.bo_name}</StyledTableCell>
               <StyledTableCell>{row.bo_email}</StyledTableCell>
@@ -180,11 +195,8 @@ const UserWithIncentiveTable = ({ userRole , rows }) => {
               )}
               {userRole === 'A' && (
                 <StyledTableCell align='right'>
-                  <IconButton color='primary' aria-label='edit'>
+                  <IconButton color='primary' aria-label='edit' onClick={() => handleEditClick(row.id)}>
                     <GrEdit />
-                  </IconButton>
-                  <IconButton color='secondary' aria-label='delete'>
-                    <RiDeleteBinLine />
                   </IconButton>
                 </StyledTableCell>
               )}
@@ -205,8 +217,11 @@ const UserWithIncentiveTable = ({ userRole , rows }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      {editModalOpen && (
+        <EditUserIncentiveModal open={editModalOpen} onClose={handleEditModalClose} userId={editUserId} onDataAdded={onDataAdded} />
+      )}
     </TableContainer>
-  )
-}
+  );
+};
 
-export default UserWithIncentiveTable
+export default UserWithIncentiveTable;

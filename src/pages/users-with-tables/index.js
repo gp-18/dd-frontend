@@ -22,7 +22,6 @@ const Index = () => {
   const fetchData = async() =>{
     try{
       const response = await axiosInstance.get("/alluserincentive") ;
-      console.log(response.data.users);
       if (Array.isArray(response.data.users)) {
         setRows(response.data.users)
       } else {
@@ -33,6 +32,7 @@ const Index = () => {
       console.error(e);
     }
   }
+
   const handleUploadClick = () => {
     setUploadModalOpen(true)
   }
@@ -49,6 +49,10 @@ const Index = () => {
     setAddManuallyModalOpen(false)
   }
 
+  const handleDataAdded = () => {
+    fetchData()
+  }
+
   return (
     <>
       {userRole === 'A' && (
@@ -62,10 +66,10 @@ const Index = () => {
         </div>
       )}
 
-      <UserWithIncentiveTable userRole={userRole} rows={rows} />
+      <UserWithIncentiveTable userRole={userRole} rows={rows} onDataAdded={handleDataAdded} />
 
-      <UploadUserWithTableModal open={isUploadModalOpen} onClose={handleCloseUploadModal} />
-      <ManualUserWithTable open={isAddManuallyModalOpen} onClose={handleCloseAddManuallyModal} />
+      <UploadUserWithTableModal open={isUploadModalOpen} onClose={handleCloseUploadModal} onDataAdded={handleDataAdded} />
+      <ManualUserWithTable open={isAddManuallyModalOpen} onClose={handleCloseAddManuallyModal} onDataAdded={handleDataAdded} />
     </>
   )
 }
