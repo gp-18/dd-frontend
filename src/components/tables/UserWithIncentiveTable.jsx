@@ -9,14 +9,16 @@ import TableRow from '@mui/material/TableRow';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import { GrEdit } from 'react-icons/gr';
-import { RiDeleteBinLine } from 'react-icons/ri';
-import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import Backdrop from '@mui/material/Backdrop';
 import EditUserIncentiveModal from '../users-with-table/EditUserIncentiveModal';
+import { LuSendHorizonal } from "react-icons/lu";
 import axiosInstance from 'src/services/AxiosInterceptor';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -38,83 +40,68 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   }
 }));
 
-const createData = (
-  srNo,
-  bo_name,
-  bo_email,
-  headquarter,
-  april_may_june_target,
-  july_aug_sept_target,
-  oct_nov_dec_target,
-  april_may_june_incentive,
-  july_aug_sept_incentive,
-  oct_nov_dec_incentive,
-  user
-) => {
-  return {
-    srNo,
-    bo_name,
-    bo_email,
-    headquarter,
-    april_may_june_target,
-    july_aug_sept_target,
-    oct_nov_dec_target,
-    april_may_june_incentive,
-    july_aug_sept_incentive,
-    oct_nov_dec_incentive,
-    user
-  };
-};
-
-const UserWithIncentiveTable = ({ userRole, rows ,onDataAdded}) => {
-  const [selectedRows, setSelectedRows] = useState([]);
+const UserWithIncentiveTable = ({ userRole, rows, onDataAdded }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
+  const [templates, setTemplates] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = rows.map((row) => row.srNo);
-      setSelectedRows(newSelecteds);
-    } else {
-      setSelectedRows([]);
+  const handleSendMailClick = async (user) => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get('/templates');
+      setTemplates(response.data);
+      setSelectedUser(user);
+      setDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      showSnackbar('Failed to fetch templates', 'error');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleCheckboxClick = (srNo) => {
-    const selectedIndex = selectedRows.indexOf(srNo);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selectedRows, srNo);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selectedRows.slice(1));
-    } else if (selectedIndex === selectedRows.length - 1) {
-      newSelected = newSelected.concat(selectedRows.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selectedRows.slice(0, selectedIndex), selectedRows.slice(selectedIndex + 1));
-    }
-
-    setSelectedRows(newSelected);
-  };
-
-  const handleSendMailClick = () => {
-    setDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    setSelectedTemplate(null);
+    setSelectedUser(null);
   };
 
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template);
-    setDialogOpen(false);
+    showSnackbar(`You have selected ${template.name}`, 'info');
+  };
+
+  const handleSendMail = async () => {
+    if (selectedTemplate && selectedUser) {
+      console.log(selectedUser);
+      setSending(true);
+      try {
+        await axiosInstance.post('/send-mail-template', {
+          templateName: selectedTemplate.name,
+          templateContent: selectedTemplate.content,
+          recipientEmail: selectedUser.bo_email,
+        });
+        showSnackbar(`Email sent successfully with template ${selectedTemplate.name} to ${selectedUser.bo_name}`, 'success');
+        handleCloseDialog();
+      } catch (error) {
+        console.error('Error sending email:', error);
+        showSnackbar('Failed to send email', 'error');
+      } finally {
+        setSending(false);
+      }
+    }
   };
 
   const handleEditClick = (userId) => {
     setEditUserId(userId);
-    console.log(userId);
     setEditModalOpen(true);
   };
 
@@ -122,71 +109,63 @@ const UserWithIncentiveTable = ({ userRole, rows ,onDataAdded}) => {
     setEditModalOpen(false);
   };
 
-  const dataAdded = () =>{
-    onDataAdded();
-  }
+  const showSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   return (
     <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 700 }} aria-label='customized table'>
+      <Table sx={{ minWidth: 700 }} aria-label="customized table">
         <TableHead>
           <TableRow>
-            <StyledTableCell padding='checkbox'>
-              <Checkbox
-                indeterminate={selectedRows.length > 0 && selectedRows.length < rows.length}
-                checked={rows.length > 0 && selectedRows.length === rows.length}
-                onChange={handleSelectAllClick}
-              />
-            </StyledTableCell>
             <StyledTableCell>SR No</StyledTableCell>
             <StyledTableCell>Bo_Name</StyledTableCell>
             <StyledTableCell>Bo_email</StyledTableCell>
             <StyledTableCell>Headquarter</StyledTableCell>
-            <StyledTableCell align='right'>abm_name</StyledTableCell>
-            <StyledTableCell align='right'>rsm_name</StyledTableCell>
-            <StyledTableCell align='right'>nsm_name</StyledTableCell>
-            <StyledTableCell align='right'>gpm_name</StyledTableCell>
-            <StyledTableCell align='right'>April-May-June Target</StyledTableCell>
-            <StyledTableCell align='right'>July-Aug-Sept Target</StyledTableCell>
-            <StyledTableCell align='right'>Oct-Nov-Dec Target</StyledTableCell>
-            <StyledTableCell align='right'>April-May-June Incentive</StyledTableCell>
-            <StyledTableCell align='right'>July-Aug-Sept Incentive</StyledTableCell>
-            <StyledTableCell align='right'>Oct-Nov-Dec Incentive</StyledTableCell>
-            {userRole === 'A' && <StyledTableCell align='right'>Send Mail</StyledTableCell>}
-            {userRole === 'A' && <StyledTableCell align='right'>Actions</StyledTableCell>}
+            <StyledTableCell align="right">abm_name</StyledTableCell>
+            <StyledTableCell align="right">rsm_name</StyledTableCell>
+            <StyledTableCell align="right">nsm_name</StyledTableCell>
+            <StyledTableCell align="right">gpm_name</StyledTableCell>
+            <StyledTableCell align="right">April-May-June Target</StyledTableCell>
+            <StyledTableCell align="right">July-Aug-Sept Target</StyledTableCell>
+            <StyledTableCell align="right">Oct-Nov-Dec Target</StyledTableCell>
+            <StyledTableCell align="right">April-May-June Incentive</StyledTableCell>
+            <StyledTableCell align="right">July-Aug-Sept Incentive</StyledTableCell>
+            <StyledTableCell align="right">Oct-Nov-Dec Incentive</StyledTableCell>
+            {userRole === 'A' && <StyledTableCell align="right">Send Mail</StyledTableCell>}
+            {userRole === 'A' && <StyledTableCell align="right">Actions</StyledTableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row,index) => (
-            <StyledTableRow key={row.srNo} selected={selectedRows.indexOf(row.srNo) !== -1}>
-              <StyledTableCell padding='checkbox'>
-                <Checkbox
-                  checked={selectedRows.indexOf(row.srNo) !== -1}
-                  onChange={() => handleCheckboxClick(row.srNo)}
-                />
-              </StyledTableCell>
-              <StyledTableCell component='th' scope='row'>
+          {rows.map((row, index) => (
+            <StyledTableRow key={index}>
+              <StyledTableCell component="th" scope="row">
                 {index + 1}
               </StyledTableCell>
               <StyledTableCell>{row.bo_name}</StyledTableCell>
               <StyledTableCell>{row.bo_email}</StyledTableCell>
               <StyledTableCell>{row.headquarter}</StyledTableCell>
-              <StyledTableCell align='right'>{row.user.abm_name}</StyledTableCell>
-              <StyledTableCell align='right'>{row.user.rsm_name}</StyledTableCell>
-              <StyledTableCell align='right'>{row.user.nsm_name}</StyledTableCell>
-              <StyledTableCell align='right'>{row.user.gpm_name}</StyledTableCell>
-              <StyledTableCell align='right'>{row.april_may_june_target}</StyledTableCell>
-              <StyledTableCell align='right'>{row.july_aug_sept_target}</StyledTableCell>
-              <StyledTableCell align='right'>{row.oct_nov_dec_target}</StyledTableCell>
-              <StyledTableCell align='right'>{row.april_may_june_incentive}</StyledTableCell>
-              <StyledTableCell align='right'>{row.july_aug_sept_incentive}</StyledTableCell>
-              <StyledTableCell align='right'>{row.oct_nov_dec_incentive}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.abm_name}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.rsm_name}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.nsm_name}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.gpm_name}</StyledTableCell>
+              <StyledTableCell align="right">{row.april_may_june_target}</StyledTableCell>
+              <StyledTableCell align="right">{row.july_aug_sept_target}</StyledTableCell>
+              <StyledTableCell align="right">{row.oct_nov_dec_target}</StyledTableCell>
+              <StyledTableCell align="right">{row.april_may_june_incentive}</StyledTableCell>
+              <StyledTableCell align="right">{row.july_aug_sept_incentive}</StyledTableCell>
+              <StyledTableCell align="right">{row.oct_nov_dec_incentive}</StyledTableCell>
               {userRole === 'A' && (
-                <StyledTableCell align='right'>
+                <StyledTableCell align="right">
                   <Button
-                    variant='variant'
-                    color='primary'
-                    onClick={handleSendMailClick}
+                    color="primary"
+                    onClick={() => handleSendMailClick(row)}
                     style={{ textTransform: 'none' }}
                   >
                     Send Mail
@@ -194,8 +173,8 @@ const UserWithIncentiveTable = ({ userRole, rows ,onDataAdded}) => {
                 </StyledTableCell>
               )}
               {userRole === 'A' && (
-                <StyledTableCell align='right'>
-                  <IconButton color='primary' aria-label='edit' onClick={() => handleEditClick(row.id)}>
+                <StyledTableCell align="right">
+                  <IconButton color="primary" aria-label="edit" onClick={() => handleEditClick(row.id)}>
                     <GrEdit />
                   </IconButton>
                 </StyledTableCell>
@@ -207,19 +186,37 @@ const UserWithIncentiveTable = ({ userRole, rows ,onDataAdded}) => {
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Select Mail Template</DialogTitle>
         <DialogContent>
-          {/* Replace the following with your template selection logic */}
-          <Button onClick={() => handleTemplateSelect('Template 1')}>Template 1</Button>
-          <Button onClick={() => handleTemplateSelect('Template 2')}>Template 2</Button>
+          {loading ? (
+            <Backdrop open={loading}>
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          ) : (
+            templates.map((template) => (
+              <Button key={template.id} onClick={() => handleTemplateSelect(template)}>
+                {template.name}
+              </Button>
+            ))
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color='primary'>
+          <Button onClick={handleCloseDialog} color="error">
             Cancel
+          </Button>
+          <Button onClick={handleSendMail} color="success" variant="contained" disabled={sending}>
+            {sending ? <CircularProgress size={24} /> : <LuSendHorizonal />}
           </Button>
         </DialogActions>
       </Dialog>
       {editModalOpen && (
         <EditUserIncentiveModal open={editModalOpen} onClose={handleEditModalClose} userId={editUserId} onDataAdded={onDataAdded} />
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+      />
     </TableContainer>
   );
 };

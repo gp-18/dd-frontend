@@ -60,7 +60,7 @@ const Index = () => {
           <Button variant='contained' onClick={handleUploadClick} style={{ marginRight: '10px' }}>
             Upload Excel File
           </Button>
-          <Button variant='contained' onClick={handleAddManuallyClick}>
+          <Button variant='outlined' onClick={handleAddManuallyClick}>
             Add Manually
           </Button>
         </div>

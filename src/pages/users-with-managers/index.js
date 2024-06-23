@@ -283,7 +283,7 @@ const Index = () => {
               <Button variant='contained' color='primary' onClick={handleFileClickOpen}>
                 Upload Excel
               </Button>
-              <Button variant='contained' color='primary' onClick={handleManualClickOpen}>
+              <Button variant='outlined' color='primary' onClick={handleManualClickOpen}>
                 Add Manually
               </Button>
             </Stack>
@@ -403,9 +403,9 @@ const Index = () => {
             />
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions style={{marginTop:"10px"}}>
           <Button onClick={handleCloseManualDialog}>Cancel</Button>
-          <Button onClick={handleManualSubmit} variant='contained' color='primary'>
+          <Button onClick={handleManualSubmit} variant='contained' color='success'>
             {editUserId ? 'Update' : 'Add'}
           </Button>
         </DialogActions>

@@ -7,13 +7,14 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import TemplateEditor from 'src/components/quill-template/TemplateEditior'
 import axiosInstance from 'src/services/AxiosInterceptor'
-import { Card, CardContent, Typography, Grid } from '@mui/material'
+import { Card, CardContent, Typography, Grid, Box } from '@mui/material'
+import { RiDeleteBin5Line } from 'react-icons/ri'
+import { PiEyeThin } from 'react-icons/pi'
 
 const Index = () => {
   const [showEditor, setShowEditor] = useState(false)
   const [savedContent, setSavedContent] = useState('')
   const [templateName, setTemplateName] = useState('')
-  const [recipientEmail, setRecipientEmail] = useState('')
   const [templates, setTemplates] = useState([])
   const [openDialog, setOpenDialog] = useState(false)
   const [dialogTitle, setDialogTitle] = useState('')
@@ -28,7 +29,7 @@ const Index = () => {
     fetchTemplates()
   }, [])
 
-  const handleOpenDialog = (template) => {
+  const handleOpenDialog = template => {
     setDialogTitle(template.name)
     setDialogContent(template.content)
     setOpenDialog(true)
@@ -38,7 +39,7 @@ const Index = () => {
     setOpenDialog(false)
   }
 
-  const handleDeleteTemplate = async (id) => {
+  const handleDeleteTemplate = async id => {
     try {
       await axiosInstance.delete(`/templates/${id}`)
       setTemplates(templates.filter(template => template.id !== id))
@@ -79,19 +80,6 @@ const Index = () => {
     }
   }
 
-  const handleSendEmail = async () => {
-    try {
-      const response = await axiosInstance.post('/send-mail-template', {
-        templateName,
-        templateContent: savedContent,
-        recipientEmail
-      })
-      console.log(response.data.message)
-    } catch (error) {
-      console.error('Error sending email:', error)
-    }
-  }
-
   return (
     <>
       <h1>Email Templates</h1>
@@ -100,9 +88,7 @@ const Index = () => {
           Create Template
         </Button>
       )}
-      {showEditor && (
-        <TemplateEditor onSave={handleSaveTemplate} onCancel={handleCancel} />
-      )}
+      {showEditor && <TemplateEditor onSave={handleSaveTemplate} onCancel={handleCancel} />}
       <Grid container spacing={3}>
         {templates.map(template => {
           const wordCount = template.content.split(' ').length
@@ -110,24 +96,37 @@ const Index = () => {
             wordCount > 30 ? template.content.split(' ').slice(0, 30).join(' ') + '...' : template.content
           return (
             <Grid item xs={12} sm={6} md={4} key={template.id}>
-              <Card style={{ borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                <CardContent>
-                  <Typography variant='h5' component='div' gutterBottom>
-                    {template.name}
-                  </Typography>
-                  <Typography variant='body2' color='textSecondary' dangerouslySetInnerHTML={{ __html: previewContent }} />
-                  <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+              <Card style={{ borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', height: '100%' }}>
+                <CardContent
+                  style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}
+                >
+                  <Box>
+                    <Typography variant='h5' component='div' gutterBottom>
+                      {template.name}
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='textSecondary'
+                      dangerouslySetInnerHTML={{ __html: previewContent }}
+                    />
+                  </Box>
+                  <Box style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'auto' }}>
                     {wordCount > 30 && (
-                      <Button variant='contained' color='primary' onClick={() => handleOpenDialog(template)} style={{ marginRight: '10px' }}>
-                        Read More
+                      <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={() => handleOpenDialog(template)}
+                        style={{ marginRight: '10px' }}
+                      >
+                        <PiEyeThin />
                       </Button>
                     )}
                     {role === 'A' && (
-                      <Button variant='contained' color='error' onClick={() => handleDeleteTemplate(template.id)}>
-                        Delete
+                      <Button variant='outlined' color='error' onClick={() => handleDeleteTemplate(template.id)}>
+                        <RiDeleteBin5Line />
                       </Button>
                     )}
-                  </div>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -141,8 +140,8 @@ const Index = () => {
           <DialogContentText dangerouslySetInnerHTML={{ __html: dialogContent }} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color='primary'>
-            Close
+          <Button onClick={handleCloseDialog} color='error'>
+            close
           </Button>
         </DialogActions>
       </Dialog>

@@ -98,7 +98,7 @@ const TemplateEditor = ({ onSave, onCancel }) => {
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
         <Button 
           variant="contained" 
-          color="primary" 
+          color="success"  
           onClick={handleSave} 
           sx={{ marginRight: '10px' }}
         >
@@ -106,7 +106,7 @@ const TemplateEditor = ({ onSave, onCancel }) => {
         </Button>
         <Button 
           variant="outlined" 
-          color="secondary" 
+          color="error" 
           onClick={onCancel}
         >
           Cancel
