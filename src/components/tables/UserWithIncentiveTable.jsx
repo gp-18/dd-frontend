@@ -81,13 +81,20 @@ const UserWithIncentiveTable = ({ userRole, rows, onDataAdded }) => {
 
   const handleSendMail = async () => {
     if (selectedTemplate && selectedUser) {
-      console.log(selectedUser);
       setSending(true);
       try {
+        const ccEmails = [
+          selectedUser.user.abm_email,
+          selectedUser.user.rsm_email,
+          selectedUser.user.nsm_email,
+          selectedUser.user.gpm_email,
+        ].filter(Boolean); 
+
         await axiosInstance.post('/send-mail-template', {
           templateName: selectedTemplate.name,
           templateContent: selectedTemplate.content,
           recipientEmail: selectedUser.bo_email,
+          ccEmails,
         });
         showSnackbar(`Email sent successfully with template ${selectedTemplate.name} to ${selectedUser.bo_name}`, 'success');
         handleCloseDialog();
@@ -128,10 +135,10 @@ const UserWithIncentiveTable = ({ userRole, rows, onDataAdded }) => {
             <StyledTableCell>Bo_Name</StyledTableCell>
             <StyledTableCell>Bo_email</StyledTableCell>
             <StyledTableCell>Headquarter</StyledTableCell>
-            <StyledTableCell align="right">abm_name</StyledTableCell>
-            <StyledTableCell align="right">rsm_name</StyledTableCell>
-            <StyledTableCell align="right">nsm_name</StyledTableCell>
-            <StyledTableCell align="right">gpm_name</StyledTableCell>
+            <StyledTableCell align="right">abm_email</StyledTableCell>
+            <StyledTableCell align="right">rsm_email</StyledTableCell>
+            <StyledTableCell align="right">nsm_email</StyledTableCell>
+            <StyledTableCell align="right">gpm_email</StyledTableCell>
             <StyledTableCell align="right">April-May-June Target</StyledTableCell>
             <StyledTableCell align="right">July-Aug-Sept Target</StyledTableCell>
             <StyledTableCell align="right">Oct-Nov-Dec Target</StyledTableCell>
@@ -151,10 +158,10 @@ const UserWithIncentiveTable = ({ userRole, rows, onDataAdded }) => {
               <StyledTableCell>{row.bo_name}</StyledTableCell>
               <StyledTableCell>{row.bo_email}</StyledTableCell>
               <StyledTableCell>{row.headquarter}</StyledTableCell>
-              <StyledTableCell align="right">{row.user.abm_name}</StyledTableCell>
-              <StyledTableCell align="right">{row.user.rsm_name}</StyledTableCell>
-              <StyledTableCell align="right">{row.user.nsm_name}</StyledTableCell>
-              <StyledTableCell align="right">{row.user.gpm_name}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.abm_email}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.rsm_email}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.nsm_email}</StyledTableCell>
+              <StyledTableCell align="right">{row.user.gpm_email}</StyledTableCell>
               <StyledTableCell align="right">{row.april_may_june_target}</StyledTableCell>
               <StyledTableCell align="right">{row.july_aug_sept_target}</StyledTableCell>
               <StyledTableCell align="right">{row.oct_nov_dec_target}</StyledTableCell>
