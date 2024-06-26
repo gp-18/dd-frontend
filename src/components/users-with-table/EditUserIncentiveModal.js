@@ -60,7 +60,28 @@ const EditUserIncentiveModal = ({ open, onClose, userId , onDataAdded}) => {
     onClose();
   };
 
+  const validateForm = () => {
+    const targetsAndIncentives = [
+      'april_may_june_target',
+      'july_aug_sept_target',
+      'oct_nov_dec_target',
+      'april_may_june_incentive',
+      'july_aug_sept_incentive',
+      'oct_nov_dec_incentive'
+    ];
+
+    for (let field of targetsAndIncentives) {
+      if (isNaN(formData[field]) || formData[field] === '') {
+        setToast({ open: true, message: `Please enter a valid number for ${field.replace('_', ' ')}`, severity: 'error' });
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validateForm()) return;
+
     setLoading(true);
 
     try {
@@ -94,12 +115,12 @@ const EditUserIncentiveModal = ({ open, onClose, userId , onDataAdded}) => {
               <TextField name="bo_name" label="BO Name" fullWidth margin="normal" value={formData.bo_name} onChange={handleChange} disabled/>
               <TextField name="bo_email" label="BO Email" fullWidth margin="normal" value={formData.bo_email} onChange={handleChange} disabled/>
               <TextField name="headquarter" label="Headquarter" fullWidth margin="normal" value={formData.headquarter} onChange={handleChange} />
-              <TextField name="april_may_june_target" label="April-May-June Target" fullWidth margin="normal" value={formData.april_may_june_target} onChange={handleChange} />
-              <TextField name="july_aug_sept_target" label="July-Aug-Sept Target" fullWidth margin="normal" value={formData.july_aug_sept_target} onChange={handleChange} />
-              <TextField name="oct_nov_dec_target" label="Oct-Nov-Dec Target" fullWidth margin="normal" value={formData.oct_nov_dec_target} onChange={handleChange} />
-              <TextField name="april_may_june_incentive" label="April-May-June Incentive" fullWidth margin="normal" value={formData.april_may_june_incentive} onChange={handleChange} />
-              <TextField name="july_aug_sept_incentive" label="July-Aug-Sept Incentive" fullWidth margin="normal" value={formData.july_aug_sept_incentive} onChange={handleChange} />
-              <TextField name="oct_nov_dec_incentive" label="Oct-Nov-Dec Incentive" fullWidth margin="normal" value={formData.oct_nov_dec_incentive} onChange={handleChange} />
+              <TextField type="number" name="april_may_june_target" label="April-May-June Target" fullWidth margin="normal" value={formData.april_may_june_target} onChange={handleChange} />
+              <TextField type="number" name="july_aug_sept_target" label="July-Aug-Sept Target" fullWidth margin="normal" value={formData.july_aug_sept_target} onChange={handleChange} />
+              <TextField type="number" name="oct_nov_dec_target" label="Oct-Nov-Dec Target" fullWidth margin="normal" value={formData.oct_nov_dec_target} onChange={handleChange} />
+              <TextField type="number" name="april_may_june_incentive" label="April-May-June Incentive" fullWidth margin="normal" value={formData.april_may_june_incentive} onChange={handleChange} />
+              <TextField type="number" name="july_aug_sept_incentive" label="July-Aug-Sept Incentive" fullWidth margin="normal" value={formData.july_aug_sept_incentive} onChange={handleChange} />
+              <TextField type="number" name="oct_nov_dec_incentive" label="Oct-Nov-Dec Incentive" fullWidth margin="normal" value={formData.oct_nov_dec_incentive} onChange={handleChange} />
               <TextField name="user.abm_name" label="ABM Name" fullWidth margin="normal" value={formData.user.abm_name} onChange={handleChange} disabled />
               <TextField name="user.rsm_name" label="RSM Name" fullWidth margin="normal" value={formData.user.rsm_name} onChange={handleChange} disabled />
               <TextField name="user.nsm_name" label="NSM Name" fullWidth margin="normal" value={formData.user.nsm_name} onChange={handleChange} disabled />
