@@ -88,23 +88,24 @@ const UserWithIncentiveTable = ({ userRole, rows, onDataAdded }) => {
           selectedUser.user.rsm_email,
           selectedUser.user.nsm_email,
           selectedUser.user.gpm_email,
-        ].filter(Boolean); // Filter out any null or undefined emails
-  
-        const total_target = selectedUser.april_may_june_target + selectedUser.july_aug_sept_target + selectedUser.oct_nov_dec_target ;
-        const total_incentive = selectedUser.april_may_june_incentive + selectedUser.july_aug_sept_incentive + selectedUser.oct_nov_dec_incentive ;
+        ].filter(Boolean); 
+
+        const total_target = selectedUser.april_may_june_target + selectedUser.july_aug_sept_target + selectedUser.oct_nov_dec_target;
+        const total_incentive = selectedUser.april_may_june_incentive + selectedUser.july_aug_sept_incentive + selectedUser.oct_nov_dec_incentive;
+
         const dynamicData = {
           bo_name: selectedUser.bo_name,
           bo_hq: selectedUser.headquarter,
           april_may_june_target: selectedUser.april_may_june_target,
-          july_aug_sept_target:selectedUser.july_aug_sept_target,
+          july_aug_sept_target: selectedUser.july_aug_sept_target,
           oct_nov_dec_target: selectedUser.oct_nov_dec_target,
-          total_target:total_target,
+          total_target: total_target,
           april_may_june_incentive: selectedUser.april_may_june_incentive,
           july_aug_sept_incentive: selectedUser.july_aug_sept_incentive,
           oct_nov_dec_incentive: selectedUser.oct_nov_dec_incentive,
-          total_incentive:total_incentive
+          total_incentive: total_incentive
         };
-  
+
         await axiosInstance.post('/send-mail-template', {
           templateName: selectedTemplate.name,
           templateContent: selectedTemplate.content,
