@@ -1,11 +1,6 @@
-// ** React Imports
 import { useState } from 'react'
-
-// ** Next Imports
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
-// ** MUI Components
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
@@ -22,20 +17,12 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import LinearProgress from '@mui/material/LinearProgress'
-
-// ** Icons Imports
 import EyeOutline from 'mdi-material-ui/EyeOutline'
 import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
-
-// ** Layout Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
-
-// ** Demo Imports
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-
 import axiosInstance from 'src/services/AxiosInterceptor'
 
-// ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '28rem' }
 }))
@@ -47,7 +34,6 @@ const LinkStyled = styled('a')(({ theme }) => ({
 }))
 
 const LoginPage = () => {
-  // ** State
   const [values, setValues] = useState({
     email: '',
     password: '',
@@ -62,12 +48,20 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false)
   const [alert, setAlert] = useState({ open: false, severity: '', message: '' })
 
-  // ** Hook
   const theme = useTheme()
   const router = useRouter()
 
   const handleChange = prop => event => {
-    setValues({ ...values, [prop]: event.target.value })
+    const value = event.target.value
+    setValues({ ...values, [prop]: value })
+
+    // Password length validation
+    if (prop === 'password') {
+      setErrors({
+        ...errors,
+        password: value.length >= 8 ? '' : 'Password must be at least 8 characters long'
+      })
+    }
   }
 
   const handleClickShowPassword = () => {
@@ -83,9 +77,15 @@ const LoginPage = () => {
     tempErrors.email = values.email ? '' : 'Email is required'
     tempErrors.password = values.password ? '' : 'Password is required'
 
+    // Email validation
     if (values.email) {
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       tempErrors.email = emailPattern.test(values.email) ? '' : 'Email is not valid'
+    }
+
+    // Password length validation
+    if (values.password.length < 8) {
+      tempErrors.password = 'Password must be at least 8 characters long'
     }
 
     setErrors(tempErrors)
@@ -102,7 +102,7 @@ const LoginPage = () => {
         })
         localStorage.setItem('userData', JSON.stringify(response.data.data));
         localStorage.setItem('token', JSON.stringify(response.data.token));
-        localStorage.setItem('role',response.data.data.role);
+        localStorage.setItem('role', response.data.data.role);
         setAlert({ open: true, severity: 'success', message: 'Login successful!' })
         setLoading(false)
         router.push('/')

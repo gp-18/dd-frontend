@@ -1,11 +1,6 @@
-// ** React Imports
 import { useState } from 'react'
-
-// ** Next Imports
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
-// ** MUI Components
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
@@ -21,20 +16,12 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import LinearProgress from '@mui/material/LinearProgress'
-
-// ** Icons Imports
 import EyeOutline from 'mdi-material-ui/EyeOutline'
 import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
-
-// ** Layout Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
-
-// ** Demo Imports
 import FooterIllustrationsV1 from 'src/views/pages/auth/FooterIllustration'
-
 import axiosInstance from 'src/services/AxiosInterceptor'
 
-// ** Styled Components
 const Card = styled(MuiCard)(({ theme }) => ({
   [theme.breakpoints.up('sm')]: { width: '28rem' }
 }))
@@ -46,7 +33,6 @@ const LinkStyled = styled('a')(({ theme }) => ({
 }))
 
 const RegisterPage = () => {
-  // ** States
   const [values, setValues] = useState({
     username: '',
     email: '',
@@ -66,12 +52,28 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false)
   const [alert, setAlert] = useState({ open: false, severity: '', message: '' })
 
-  // ** Hook
   const theme = useTheme()
   const router = useRouter()
 
   const handleChange = prop => event => {
-    setValues({ ...values, [prop]: event.target.value })
+    const value = event.target.value
+    setValues({ ...values, [prop]: value })
+
+    // Password length validation
+    if (prop === 'password') {
+      setErrors({
+        ...errors,
+        password: value.length >= 8 ? '' : 'Password must be at least 8 characters long'
+      })
+    }
+
+    // Password confirmation length validation
+    if (prop === 'password_confirmation') {
+      setErrors({
+        ...errors,
+        password_confirmation: value.length >= 8 ? '' : 'Password confirmation must be at least 8 characters long'
+      })
+    }
   }
 
   const handleClickShowPassword = () => {
@@ -93,13 +95,25 @@ const RegisterPage = () => {
     tempErrors.password = values.password ? '' : 'Password is required'
     tempErrors.password_confirmation = values.password_confirmation ? '' : 'Password confirmation is required'
 
+    // Email validation
     if (values.email) {
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       tempErrors.email = emailPattern.test(values.email) ? '' : 'Email is not valid'
     }
 
+    // Passwords match validation
     if (values.password && values.password_confirmation) {
       tempErrors.password_confirmation = values.password === values.password_confirmation ? '' : 'Passwords do not match'
+    }
+
+    // Password length validation
+    if (values.password.length < 8) {
+      tempErrors.password = 'Password must be at least 8 characters long'
+    }
+
+    // Password confirmation length validation
+    if (values.password_confirmation.length < 8) {
+      tempErrors.password_confirmation = 'Password confirmation must be at least 8 characters long'
     }
 
     setErrors(tempErrors)
