@@ -13,6 +13,7 @@ import axiosInstance from '../../services/AxiosInterceptor'
 import Snackbar from '@mui/material/Snackbar'
 import MuiAlert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
+import Backdrop from '@mui/material/Backdrop'
 
 const Index = () => {
   const [openFileDialog, setOpenFileDialog] = useState(false)
@@ -49,6 +50,7 @@ const Index = () => {
 
   const fetchTableData = async () => {
     try {
+      setLoading(true)
       const response = await axiosInstance.get(`allusers?page=${page + 1}&per_page=${rowsPerPage}`)
       if (Array.isArray(response.data.users)) {
         setRows(response.data.users)
@@ -58,6 +60,11 @@ const Index = () => {
       }
     } catch (error) {
       console.error('Error fetching table data:', error)
+      setSnackbarOpen(true)
+      setSnackbarMessage('Error fetching table data')
+      setSnackbarSeverity('error')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -272,6 +279,13 @@ const Index = () => {
         </MuiAlert>
       </Snackbar>
 
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <CircularProgress />
@@ -403,7 +417,7 @@ const Index = () => {
             />
           </Stack>
         </DialogContent>
-        <DialogActions style={{marginTop:"10px"}}>
+        <DialogActions>
           <Button onClick={handleCloseManualDialog}>Cancel</Button>
           <Button onClick={handleManualSubmit} variant='contained' color='success'>
             {editUserId ? 'Update' : 'Add'}
