@@ -1,6 +1,15 @@
 const path = require('path')
 
 module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/pages/login',
+        permanent: true, 
+      },
+    ];
+  },
   trailingSlash: true,
   reactStrictMode: false,
   experimental: {
