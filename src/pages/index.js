@@ -1,101 +1,112 @@
-// ** MUI Imports
-import Grid from '@mui/material/Grid'
-
-// ** Icons Imports
-import Poll from 'mdi-material-ui/Poll'
-import CurrencyUsd from 'mdi-material-ui/CurrencyUsd'
-import HelpCircleOutline from 'mdi-material-ui/HelpCircleOutline'
-import BriefcaseVariantOutline from 'mdi-material-ui/BriefcaseVariantOutline'
-
-// ** Custom Components Imports
-import CardStatisticsVerticalComponent from 'src/@core/components/card-statistics/card-stats-vertical'
-
-// ** Styled Component Import
-import ApexChartWrapper from 'src/@core/styles/libs/react-apexcharts'
-
-// ** Demo Components Imports
-import Table from 'src/views/dashboard/Table'
-import Trophy from 'src/views/dashboard/Trophy'
-import TotalEarning from 'src/views/dashboard/TotalEarning'
-import StatisticsCard from 'src/views/dashboard/StatisticsCard'
-import WeeklyOverview from 'src/views/dashboard/WeeklyOverview'
-import DepositWithdraw from 'src/views/dashboard/DepositWithdraw'
-import SalesByCountries from 'src/views/dashboard/SalesByCountries'
+import React, { useEffect, useState } from 'react';
+import axiosInstance from 'src/services/AxiosInterceptor';
+import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
+import { IoMailSharp } from 'react-icons/io5';
+import { PiUsersFourFill } from 'react-icons/pi';
+import { FaUserTie, FaUserMd, FaUserNurse, FaUserGraduate, FaUserCog } from 'react-icons/fa'; // Add relevant icons
 
 const Dashboard = () => {
-  return (
-    <ApexChartWrapper>
-      <Grid container spacing={6}>
-        <Grid item xs={12} md={4}>
-          <Trophy />
-        </Grid>
-        <Grid item xs={12} md={8}>
-          <StatisticsCard />
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          <WeeklyOverview />
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          <TotalEarning />
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          <Grid container spacing={6}>
-            <Grid item xs={6}>
-              <CardStatisticsVerticalComponent
-                stats='$25.6k'
-                icon={<Poll />}
-                color='success'
-                trendNumber='+42%'
-                title='Total Profit'
-                subtitle='Weekly Profit'
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <CardStatisticsVerticalComponent
-                stats='$78'
-                title='Refunds'
-                trend='negative'
-                color='secondary'
-                trendNumber='-15%'
-                subtitle='Past Month'
-                icon={<CurrencyUsd />}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <CardStatisticsVerticalComponent
-                stats='862'
-                trend='negative'
-                trendNumber='-18%'
-                title='New Project'
-                subtitle='Yearly Project'
-                icon={<BriefcaseVariantOutline />}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <CardStatisticsVerticalComponent
-                stats='15'
-                color='warning'
-                trend='negative'
-                trendNumber='-18%'
-                subtitle='Last Week'
-                title='Sales Queries'
-                icon={<HelpCircleOutline />}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12} md={6} lg={4}>
-          <SalesByCountries />
-        </Grid>
-        <Grid item xs={12} md={12} lg={8}>
-          <DepositWithdraw />
-        </Grid>
-        <Grid item xs={12}>
-          <Table />
-        </Grid>
-      </Grid>
-    </ApexChartWrapper>
-  )
-}
+  const [totalUserAndTemplates, setTotalUserAndTemplates] = useState({
+    total_bo: "0",
+    total_abm: "0",
+    total_rsm: "0",
+    total_nsm: "0",
+    total_gpm: "0",
+    total_templates: "0"
+  });
 
-export default Dashboard
+  useEffect(() => {
+    const fetchUsersAndTemplates = async () => {
+      try {
+        const response = await axiosInstance.get('totalUserAndTemplates');
+        console.log(response.data.total_user_and_templates);
+        setTotalUserAndTemplates(response.data.total_user_and_templates);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        console.log('finally');
+      }
+    };
+    fetchUsersAndTemplates();
+  }, []);
+
+  const totalUsers = [
+    { label: 'Total BO', value: totalUserAndTemplates.total_bo, icon: <FaUserTie size={40} style={{ color: '#4CAF50' }} /> },
+    { label: 'Total ABM', value: totalUserAndTemplates.total_abm, icon: <FaUserMd size={40} style={{ color: '#2196F3' }} /> },
+    { label: 'Total RSM', value: totalUserAndTemplates.total_rsm, icon: <FaUserNurse size={40} style={{ color: '#FFC107' }} /> },
+    { label: 'Total NSM', value: totalUserAndTemplates.total_nsm, icon: <FaUserGraduate size={40} style={{ color: '#E91E63' }} /> },
+    { label: 'Total GPM', value: totalUserAndTemplates.total_gpm, icon: <FaUserCog size={40} style={{ color: '#9C27B0' }} /> }
+  ];
+
+  const calculateTotalUsers = () => {
+    return totalUsers.reduce((sum, user) => sum + parseInt(user.value), 0);
+  };
+
+  return (
+    <Box sx={{ minHeight: '100vh', py: 5 }}>
+      <Grid container spacing={3} justifyContent="center">
+        <Grid item xs={12} sm={6}>
+          <Card sx={{ backgroundColor: '#ffecb3', borderRadius: '15px', boxShadow: 5 }}>
+            <CardContent>
+              <Grid container alignItems="center" spacing={2}>
+                <Grid item>
+                  <IoMailSharp size={50} style={{ color: '#ff9800' }} />
+                </Grid>
+                <Grid item>
+                  <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
+                    Total Email Templates
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    {totalUserAndTemplates.total_templates}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <Card sx={{ backgroundColor: '#c8e6c9', borderRadius: '15px', boxShadow: 5 }}>
+            <CardContent>
+              <Grid container alignItems="center" spacing={2}>
+                <Grid item>
+                  <PiUsersFourFill size={50} style={{ color: '#4caf50' }} />
+                </Grid>
+                <Grid item>
+                  <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold' }}>
+                    Total Users
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                    {calculateTotalUsers()}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        {totalUsers.map((user, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+            <Card sx={{ borderRadius: '15px', boxShadow: 5, backgroundColor: 'grey', '&:hover': { boxShadow: 10 } }}>
+              <CardContent>
+                <Grid container alignItems="center" spacing={2}>
+                  <Grid item>
+                    {user.icon}
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold' }}>
+                      {user.label}
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {user.value}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+};
+
+export default Dashboard;
