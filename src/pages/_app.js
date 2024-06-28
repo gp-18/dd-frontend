@@ -1,6 +1,8 @@
 // ** Next Imports
 import Head from 'next/head'
-import { Router } from 'next/router'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import Router from 'next/router'
 
 // ** Loader Import
 import NProgress from 'nprogress'
@@ -49,6 +51,24 @@ const App = props => {
   // Variables
   const getLayout = Component.getLayout ?? (page => <UserLayout>{page}</UserLayout>)
 
+  const router = useRouter();
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const protectedRoutes = ['/pages/login', '/pages/register']
+
+    if (!token && !protectedRoutes.includes(router.pathname)) {
+      setError('You must be logged in to access this page.')
+      router.push('/pages/login');
+    } else if (token && protectedRoutes.includes(router.pathname)) {
+      setError('You are already logged in.')
+      router.back();
+    } else {
+      setError(null)
+    }
+  }, [router])
+
   return (
     <CacheProvider value={emotionCache}>
       <Head>
@@ -64,7 +84,15 @@ const App = props => {
       <SettingsProvider>
         <SettingsConsumer>
           {({ settings }) => {
-            return <ThemeComponent settings={settings}>{getLayout(<Component {...pageProps} />)}</ThemeComponent>
+            return <ThemeComponent settings={settings}>
+              {error ? (
+                <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+                  {error}
+                </div>
+              ) : (
+                getLayout(<Component {...pageProps} />)
+              )}
+            </ThemeComponent>
           }}
         </SettingsConsumer>
       </SettingsProvider>
@@ -73,3 +101,4 @@ const App = props => {
 }
 
 export default App
+
